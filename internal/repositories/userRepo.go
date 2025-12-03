@@ -28,3 +28,34 @@ func GetUserByEmail(email string) (*models.User, error) {
 func UpdateUser(user *models.User) error {
 	return config.DB.Save(user).Error
 }
+
+// 5. Function to get get all users
+func GetAllUsers(offset, limit int, search, role, sortBy, sortOrder string) ([]models.User, int64, error) {
+	var users []models.User
+	var total int64
+
+	query := config.DB.Model(&models.User{})
+
+	// Search by firstName, lastName and email
+	if search != "" {
+		searchPattern := "%" + search + "%"
+		query = query.Where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?", searchPattern, searchPattern, searchPattern)
+	}
+
+	// Filter by role
+	if role != "" {
+		query = query.Where("role = ?", role)
+	}
+
+	// Count total matching users
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Pagination + Sorting
+	if err := query.Order(sortBy + " " + sortOrder).Offset(offset).Limit(limit).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return users, total, nil
+}

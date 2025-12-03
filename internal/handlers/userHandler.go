@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"math"
 	"net/http"
+	"strconv"
 
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/models"
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/services"
@@ -147,11 +149,47 @@ func ChangePassword(c *gin.Context) {
 			"message": err.Error(),
 			"status":  false,
 		})
-		return 
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Password changed successfully",
 		"status":  true,
+	})
+}
+
+// * 5. Function to get all users
+func GetAllUsers(c *gin.Context) {
+	// Parse query params
+	pageStr := c.DefaultQuery("page", "1")
+	limitStr := c.DefaultQuery("limit", "10")
+	search := c.Query("search")
+	role := c.Query("role")
+	sortBy := c.DefaultQuery("sortBy", "created_at")
+	sortOrder := c.DefaultQuery("sortOrder", "desc")
+
+	users, totalUsers, err := services.GetAllUsers(pageStr, limitStr, search, role, sortBy, sortOrder)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+			"status":  false,
+		})
+		return
+	}
+
+	// Convert page and limit to int
+	page, _ := strconv.Atoi(pageStr)
+	limit, _ := strconv.Atoi(limitStr)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Users fetched successfully",
+		"status":  true,
+		"users":   users,
+		"pagination": gin.H{
+			"total":      totalUsers,
+			"page":       page,
+			"limit":      limit,
+			"totalPages": int(math.Ceil(float64(totalUsers) / float64(limit))),
+		},
 	})
 }

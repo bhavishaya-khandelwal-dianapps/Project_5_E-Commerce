@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/models"
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/repositories"
@@ -71,4 +72,21 @@ func ChangePassword(user *models.User, input *ChangePasswordInput) error {
 	// Update user password
 	user.Password = string(hashedPassword)
 	return repositories.UpdateUser(user)
+}
+
+// 4. Function to get all users
+func GetAllUsers(pageStr, limitStr, search, role, sortBy, sortOrder string) ([]models.User, int64, error) {
+	page, _ := strconv.Atoi(pageStr)
+	limit, _ := strconv.Atoi(limitStr)
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+
+	offset := (page - 1) * limit 
+
+	return repositories.GetAllUsers(offset, limit, search, role, sortBy, sortOrder)
 }

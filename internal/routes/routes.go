@@ -17,5 +17,6 @@ func SetupRoutes(router *gin.Engine) {
 		api.GET("/user/me", middleware.Auth(), middleware.IsUser(), handlers.GetUser)
 		api.PUT("/user/me", middleware.Auth(), middleware.IsUser(), handlers.UpdateProfile)
 		api.PUT("/user/change-password", middleware.Auth(), middleware.IsUser(), handlers.ChangePassword)
+		api.GET("/users", middleware.Auth(), middleware.IsAdmin(), handlers.GetAllUsers)
 	}
 }
