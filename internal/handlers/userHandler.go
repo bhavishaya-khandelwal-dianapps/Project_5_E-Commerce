@@ -193,3 +193,33 @@ func GetAllUsers(c *gin.Context) {
 		},
 	})
 }
+
+// * 6. Function to delete user by id
+func DeleteUser(c *gin.Context) {
+	idParams := c.Param("id")
+
+	// Convert id to uint
+	id, err := strconv.ParseUint(idParams, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid user id",
+			"status":  false,
+		})
+		return
+	}
+
+	// Call service
+	err = services.DeleteUser(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+			"status":  false,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User deleted successfully",
+		"status":  true,
+	})
+}

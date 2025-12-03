@@ -86,7 +86,12 @@ func GetAllUsers(pageStr, limitStr, search, role, sortBy, sortOrder string) ([]m
 		limit = 10
 	}
 
-	offset := (page - 1) * limit 
+	offset := (page - 1) * limit
 
 	return repositories.GetAllUsers(offset, limit, search, role, sortBy, sortOrder)
+}
+
+// 5. Function to delete user by id
+func DeleteUser(id uint) error {
+	return repositories.DeleteUser(id)
 }

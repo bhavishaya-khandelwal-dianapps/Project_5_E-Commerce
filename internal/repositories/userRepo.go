@@ -59,3 +59,8 @@ func GetAllUsers(offset, limit int, search, role, sortBy, sortOrder string) ([]m
 
 	return users, total, nil
 }
+
+// 6. Function to delete user by id
+func DeleteUser(id uint) error {
+	return config.DB.Delete(&models.User{}, id).Error
+}
