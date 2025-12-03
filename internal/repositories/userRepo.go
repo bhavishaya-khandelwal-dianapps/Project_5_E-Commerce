@@ -23,3 +23,8 @@ func GetUserByEmail(email string) (*models.User, error) {
 	err := config.DB.Where("email = ?", email).First(&user).Error
 	return &user, err
 }
+
+// 4. Function to update user
+func UpdateUser(user *models.User) error {
+	return config.DB.Save(user).Error
+}

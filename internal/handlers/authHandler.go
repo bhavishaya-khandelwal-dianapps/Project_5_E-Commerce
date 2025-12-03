@@ -12,7 +12,7 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func Logic(c *gin.Context) {
+func Login(c *gin.Context) {
 	var req LoginRequest
 
 	// Validate incoming JSON

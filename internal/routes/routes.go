@@ -2,24 +2,20 @@ package routes
 
 import (
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/handlers"
+	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRoutes(router *gin.Engine) {
 	api := router.Group("/api/v1")
 	{
-		// User routes
+		// Auth Routes
 		api.POST("/register", handlers.Register)
-		api.POST("/login", handlers.Logic) // login will be implemented next
-		// api.GET("/users/:id", handlers.GetUser) // get user by ID
+		api.POST("/login", handlers.Login)
 
-		// // Product routes
-		// api.POST("/products", handlers.CreateProduct)
-		// api.GET("/products", handlers.GetProducts)
-		// api.GET("/products/:id", handlers.GetProduct)
-		// api.PUT("/products/:id", handlers.UpdateProduct)
-		// api.DELETE("/products/:id", handlers.DeleteProduct)
-
-		// // TODO: Add routes for Cart, Order, Review, Payment
+		// User Routes
+		api.GET("/user/me", middleware.Auth(), middleware.IsUser(), handlers.GetUser)
+		api.PUT("/user/me", middleware.Auth(), middleware.IsUser(), handlers.UpdateProfile)
+		api.PUT("/user/change-password", middleware.Auth(), middleware.IsUser(), handlers.ChangePassword)
 	}
 }
