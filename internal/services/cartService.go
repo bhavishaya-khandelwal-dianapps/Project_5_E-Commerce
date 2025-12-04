@@ -61,7 +61,22 @@ func AddToCart(userId uint, input *AddToCartInput) (*models.Cart, error) {
 	return newCart, nil
 }
 
-// 2. Function to get cart items 
+// 2. Function to get cart items
 func GetCartItems(userId uint) ([]models.Cart, error) {
 	return repositories.GetCartItems(userId)
+}
+
+// 3. Function to update cart
+func UpdateCartByUserId(userId uint, input repositories.UpdateCartByUserIdInput) (*models.Cart, error) {
+	return repositories.UpdateCartByUserId(userId, input)
+}
+
+// 4. Function to remove item from cart
+func DeleteProductFromCart(userId, productId uint) error {
+	return repositories.RemoveProductFromCart(userId, productId)
+}
+
+// 5. Function to clear cart
+func ClearCart(userId uint) error {
+	return repositories.ClearCart(userId)
 }

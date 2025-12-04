@@ -10,6 +10,8 @@ func CartRoutes(rg *gin.RouterGroup) {
 	cart := rg.Group("/cart")
 	{
 		cart.POST("/", middleware.Auth(), middleware.IsAdminOrUser(), handlers.AddToCart)
-		cart.GET("/", middleware.Auth(), middleware.IsAdminOrUser(), handlers.GetCartItems);
+		cart.GET("/", middleware.Auth(), middleware.IsAdminOrUser(), handlers.GetCartItems)
+		cart.PUT("/", middleware.Auth(), middleware.IsAdminOrUser(), handlers.UpdateCart)
+		cart.DELETE("/clear", middleware.Auth(), middleware.IsAdminOrUser(), handlers.ClearCart)
 	}
 }

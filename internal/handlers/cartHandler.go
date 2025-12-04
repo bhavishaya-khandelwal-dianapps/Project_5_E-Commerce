@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/models"
+	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/repositories"
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -73,5 +74,90 @@ func GetCartItems(c *gin.Context) {
 		"message":   "Cart items fetched successfully",
 		"status":    true,
 		"cartItems": cartItems,
+	})
+}
+
+// 3. Function to update cart
+func UpdateCart(c *gin.Context) {
+	userInterface, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "User not found",
+			"status":  false,
+		})
+		return
+	}
+
+	user := userInterface.(models.User)
+	userId := user.ID
+
+	var input repositories.UpdateCartByUserIdInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+			"status":  false,
+		})
+		return
+	}
+
+	if input.Quantity == 0 {
+		err := services.DeleteProductFromCart(uint(userId), uint(input.ProductId))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": err.Error(),
+				"status":  false,
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Item removed successfully",
+			"status":  false,
+		})
+		return
+	}
+
+	cartItem, err := services.UpdateCartByUserId(uint(userId), input)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+			"status":  false,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Cart item updated successfully",
+		"status":   true,
+		"cartItem": cartItem,
+	})
+}
+
+// 4. Function to clear cart
+func ClearCart(c *gin.Context) {
+	userInterface, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "User not found",
+			"status":  false,
+		})
+		return
+	}
+
+	user := userInterface.(models.User)
+	userId := user.ID
+
+	err := services.ClearCart(uint(userId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+			"status":  false,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Cart cleared successfully",
+		"status":  true,
 	})
 }
