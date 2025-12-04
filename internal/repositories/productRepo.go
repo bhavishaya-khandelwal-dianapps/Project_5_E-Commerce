@@ -1,8 +1,11 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/config"
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/models"
+	"gorm.io/gorm"
 )
 
 // 1. Function to create product
@@ -69,12 +72,29 @@ func GetAllProducts(params ProductQueryParams) ([]models.Product, int64, error) 
 	return products, total, nil
 }
 
+// Define a custom error
+var ErrProductNotFound = errors.New("product not found")
+
 // 3. Function to get product by id
 func GetProduct(id uint) (*models.Product, error) {
 	var product models.Product
-	err := config.DB.Find(&product, id).Error
+	err := config.DB.First(&product, id).Error
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, ErrProductNotFound
+		}
 		return nil, err
 	}
+
 	return &product, nil
+}
+
+// 4. Function to update product
+func UpdateProduct(product *models.Product) error {
+	return config.DB.Save(product).Error
+}
+
+// 5. Function to delete product
+func DeleteProduct(product *models.Product) error {
+	return config.DB.Delete(product).Error
 }

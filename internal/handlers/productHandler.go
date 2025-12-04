@@ -122,3 +122,76 @@ func GetProduct(c *gin.Context) {
 		"product": product,
 	})
 }
+
+// 4. Function to update product
+func UpdateProduct(c *gin.Context) {
+	idParams := c.Param("id")
+
+	id, err := strconv.Atoi(idParams)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid product ID",
+			"status":  false,
+		})
+		return
+	}
+
+	var input services.UpdateProductInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+			"status":  false,
+		})
+		return
+	}
+
+	updateProduct, err := services.UpdateProduct(uint(id), input)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+			"status":  false,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Product updated successfully",
+		"status":  true,
+		"product": updateProduct,
+	})
+}
+
+// 5. Function to delete product
+func DeleteProduct(c *gin.Context) {
+	idParams := c.Param("id")
+	id, err := strconv.Atoi(idParams)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid product ID",
+			"status":  false,
+		})
+		return
+	}
+
+	err = services.DeleteProduct(uint(id))
+	if err != nil {
+		if err == repositories.ErrProductNotFound {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "Product not found",
+				"status":  false,
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+			"status":  false,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Product deleted successfully",
+		"status":  true,
+	})
+}

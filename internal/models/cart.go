@@ -10,6 +10,6 @@ type Cart struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 
-	User    User    `gorm:"foreignKey:UserId"`
-	Product Product `gorm:"foreignKey:ProductId"`
+	User    User    `gorm:"foreignKey:UserId" json:"user"`
+	Product Product `gorm:"foreignKey:ProductId" json:"product"`
 }
