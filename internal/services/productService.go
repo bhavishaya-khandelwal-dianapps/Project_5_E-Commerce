@@ -94,15 +94,15 @@ func UpdateProduct(id uint, input UpdateProductInput) (*models.Product, error) {
 	return product, nil
 }
 
-//* 5. Function to delete product 
+// * 5. Function to delete product
 func DeleteProduct(id uint) error {
 	product, err := GetProduct(id)
 	if err != nil {
 		if err == repositories.ErrProductNotFound {
 			return repositories.ErrProductNotFound
 		}
-		return err 
+		return err
 	}
 
-	return repositories.DeleteProduct(product);
-} 
+	return repositories.DeleteProduct(product)
+}

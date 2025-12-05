@@ -22,6 +22,9 @@ func main() {
 	// Initialize config and database
 	config.Init()
 
+	// Initialize razorpay
+	config.InitRazorpay()
+
 	// Auto-migrate all models
 	err := config.DB.AutoMigrate(
 		&models.User{},

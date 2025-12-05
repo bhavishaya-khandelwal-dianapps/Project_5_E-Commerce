@@ -98,3 +98,21 @@ func UpdateProduct(product *models.Product) error {
 func DeleteProduct(product *models.Product) error {
 	return config.DB.Delete(product).Error
 }
+
+// 6. Function to decrease stock
+func DecreaseProductStock(productId uint, qty int) error {
+	var product models.Product
+
+	// Fetch product
+	if err := config.DB.First(&product, productId).Error; err != nil {
+		return err
+	}
+
+	// Check stock
+	if product.Stock < qty {
+		return errors.New("insufficient stock")
+	}
+
+	// Update stock
+	return config.DB.Model(&product).Update("stock", product.Stock-qty).Error
+}
