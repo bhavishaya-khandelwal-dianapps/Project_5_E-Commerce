@@ -1,7 +1,12 @@
 package handlers
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
 	"net/http"
+	"os"
 
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/services"
 	"github.com/gin-gonic/gin"
@@ -80,4 +85,50 @@ func VerifyPayment(c *gin.Context) {
 		"message": "Payment verified successfully",
 		"status":  true,
 	})
+}
+
+// 3. Function to handler razorpay webhook
+func HandlerRazorpayWebhook(c *gin.Context) {
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "Inavalid Request",
+			"status":  false,
+		})
+		return
+	}
+
+	signature := c.GetHeader("X-Razorpay-Signature")
+	secret := os.Getenv("RAZORPAY_WEBHOOK_SECRET")
+
+	if !verifyWebhookSignature(body, signature, secret) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Signature mismatched",
+			"status":  false,
+		})
+		return
+	}
+
+	// Process webhook event
+	err = services.ProcessWebhookEvent(body, signature)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+			"status":  false,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Webhook received",
+		"status":  true,
+	})
+}
+
+func verifyWebhookSignature(body []byte, signature, secret string) bool {
+	h := hmac.New(sha256.New, []byte(secret))
+	h.Write(body)
+	computedSignature := hex.EncodeToString(h.Sum(nil))
+
+	return computedSignature == signature
 }

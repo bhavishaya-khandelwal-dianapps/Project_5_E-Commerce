@@ -11,5 +11,6 @@ func PaymentRoutes(rg *gin.RouterGroup) {
 	{
 		payment.POST("/create", middleware.Auth(), middleware.IsUser(), handlers.CreatePayment)
 		payment.POST("/verify", middleware.Auth(), middleware.IsUser(), handlers.VerifyPayment)
+		payment.POST("/webhook", handlers.HandlerRazorpayWebhook);
 	}
 }

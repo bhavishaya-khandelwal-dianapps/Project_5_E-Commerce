@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"strconv"
@@ -50,7 +51,7 @@ func VerifyPayment(orderId, paymentId, signature string) error {
 		"razorpay_payment_id": paymentId,
 	}
 
-	if isValid := utils.VerifyPaymentSignature(params, signature, config.RazorpayClient.Auth.Secret); isValid == false {
+	if isValid := utils.VerifyPaymentSignature(params, signature, config.RazorpayClient.Auth.Secret); !isValid {
 		log.Println("❌ Razorpay signature verification failed")
 		return errors.New("payment verification failed")
 	}
@@ -84,4 +85,89 @@ func VerifyPayment(orderId, paymentId, signature string) error {
 	}
 
 	return nil
+}
+
+// 3. Function to process webhook
+type RazorpayWebhookPayload struct {
+	Event   string                 `json:"event"`
+	Payload map[string]interface{} `json:"payload"`
+}
+
+func ProcessWebhookEvent(body []byte, signature string) error {
+	var data RazorpayWebhookPayload
+
+	if err := json.Unmarshal(body, &data); err != nil {
+		return err
+	}
+
+	switch data.Event {
+	case "payment.captured":
+		return handlePaymentCapture(data, signature)
+
+	case "payment.failed":
+		return handlePaymentFailed(data)
+
+	case "order.paid":
+		return nil
+
+	default:
+		return nil
+	}
+}
+
+// Payment success, handler
+func handlePaymentCapture(data RazorpayWebhookPayload, signature string) error {
+	paymentObj := data.Payload["payment"].(map[string]interface{})["entity"].(map[string]interface{})
+
+	razorpayPaymentId := paymentObj["id"].(string)
+	orderId := paymentObj["order_id"].(string)
+
+	// Find payment by razorpayOrderId
+	payment, err := repositories.GetPaymentByRazorpayOrderId(orderId)
+	if err != nil {
+		return errors.New("payment not found")
+	}
+
+	payment.Status = "SUCCESS"
+	payment.PaymentId = razorpayPaymentId
+	payment.RazorpaySignature = signature
+
+	order, err := repositories.GetOrderById(payment.OrderId)
+	if err != nil {
+		return err
+	}
+
+	order.Status = "PAID"
+	err = repositories.UpdateOrder(order)
+	if err != nil {
+		return err
+	}
+
+	return repositories.UpdatePayment(payment)
+}
+
+// Payment failed, handler
+func handlePaymentFailed(data RazorpayWebhookPayload) error {
+	paymentObj := data.Payload["payment"].(map[string]interface{})["entity"].(map[string]interface{})
+
+	orderId := paymentObj["order_id"].(string)
+	payment, err := repositories.GetPaymentByRazorpayOrderId(orderId)
+	if err != nil {
+		return errors.New("payment not found")
+	}
+
+	payment.Status = "FAILED"
+
+	order, err := repositories.GetOrderById(payment.OrderId)
+	if err != nil {
+		return err
+	}
+
+	order.Status = "FAILED"
+	err = repositories.UpdateOrder(order)
+	if err != nil {
+		return err
+	}
+
+	return repositories.UpdatePayment(payment)
 }
