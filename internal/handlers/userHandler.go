@@ -76,6 +76,8 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
+	// utils.SendSimpleEmail("Sample SUBJECT", "Sample body", []string{"bhavishaya.khandelwal@dianapps.com"})
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User profile fetched successfully",
 		"status":  true,
