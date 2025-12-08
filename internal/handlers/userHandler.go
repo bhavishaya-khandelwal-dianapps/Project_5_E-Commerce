@@ -7,6 +7,7 @@ import (
 
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/models"
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/services"
+	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -43,6 +44,14 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// Send welcome email
+	data := utils.WelcomeUserEmail{
+		FirstName: user.FirstName,
+		Email:     user.Email,
+	}
+
+	go utils.SendEmail("Welcome to Acoustic Store", "internal/views/welcomeUser.html", []string{user.Email}, data)
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User registered successfully",
 		"status":  true,
@@ -75,8 +84,6 @@ func GetUser(c *gin.Context) {
 		})
 		return
 	}
-
-	// utils.SendSimpleEmail("Sample SUBJECT", "Sample body", []string{"bhavishaya.khandelwal@dianapps.com"})
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User profile fetched successfully",
