@@ -14,5 +14,6 @@ func SetupRoutes(router *gin.Engine) {
 		CartRoutes(api)
 		OrderRoutes(api)
 		PaymentRoutes(api)
+		ReviewRoutes(api)
 	}
 }
