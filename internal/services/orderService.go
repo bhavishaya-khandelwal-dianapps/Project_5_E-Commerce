@@ -5,6 +5,7 @@ import (
 
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/models"
 	"github.com/bhavishaya-khandelwal-dianapps/E-Commerce-Website/internal/repositories"
+	"gorm.io/gorm"
 )
 
 // 1. Function to create order
@@ -69,4 +70,31 @@ func CreateOrder(userId uint) (*models.Order, error) {
 
 func GetOrderById(orderId uint) (*models.Order, error) {
 	return repositories.GetOrderById(orderId)
+}
+
+// 2. Function to cancel order
+func CancelOrder(orderId, userId uint) error {
+	order, err := repositories.GetOrderById(orderId)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return errors.New("order not found")
+		}
+		return err
+	}
+
+	if order.UserId != userId {
+		return errors.New("oops, this is not your order")
+	}
+
+	if order.Status != "PENDING" {
+		return errors.New("cannot cancel this order")
+	}
+
+	order.Status = "CANCELLED"
+	err = repositories.UpdateOrder(order)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

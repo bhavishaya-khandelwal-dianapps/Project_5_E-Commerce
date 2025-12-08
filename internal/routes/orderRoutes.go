@@ -10,5 +10,6 @@ func OrderRoutes(rg *gin.RouterGroup) {
 	order := rg.Group("/order")
 	{
 		order.POST("/create", middleware.Auth(), middleware.IsUser(), handlers.PlaceOrder)
+		order.POST("/cancel/:id", middleware.Auth(), middleware.IsUser(), handlers.CancelOrder)
 	}
 }
